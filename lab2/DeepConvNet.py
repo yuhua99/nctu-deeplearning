@@ -1,58 +1,54 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from functools import reduce
 
 class Net(nn.Module):
-    def __init__(self, activation=None):
+    def __init__(self, activation=None, deepconv=[25,50,100,200], dropout=0.5):
         super(Net, self).__init__()
         
         if not activation:
             activation = nn.ELU
         
-        self.layer1 = nn.Sequential(
-            nn.Conv2d(1, 25, (1, 5), stride=(1, 1), padding=(0, 2), bias=False),
-            nn.Conv2d(25, 25, (2, 1), stride=(1, 1), bias=False),
-            nn.BatchNorm2d(25),
-            activation,
-            nn.MaxPool2d((1, 2)),
-            nn.Dropout(0.5)
+        self.deepconv = deepconv
+        self.conv0 = nn.Sequential(
+            nn.Conv2d(
+                1, deepconv[0], kernel_size=(1, 5),
+                stride=(1,1), padding=(0,0), bias=True
+            ),
+            nn.Conv2d(
+                deepconv[0], deepconv[0], kernel_size=(2,1),
+                stride=(1,1), padding=(0,0), bias=True
+            ),
+            nn.BatchNorm2d(deepconv[0]),
+            activation(),
+            nn.MaxPool2d(kernel_size=(1,2)),
+            nn.Dropout(p=dropout)
         )
-
-        self.layer2 = nn.Sequential(
-            nn.Conv2d(25, 50, (1, 5), stride=(1, 1), padding=(0, 2), bias=False),
-            nn.BatchNorm2d(50),
-            activation,
-            nn.MaxPool2d((1, 2)),
-            nn.Dropout(0.5)
-        )
-
-        self.layer3 = nn.Sequential(
-            nn.Conv2d(50, 100, (1, 5), stride=(1, 1), padding=(0, 2), bias=False),
-            nn.BatchNorm2d(100),
-            activation,
-            nn.MaxPool2d((1, 2)),
-            nn.Dropout(0.5)
-        )
-
-        self.layer4 = nn.Sequential(
-            nn.Conv2d(100, 200, (1, 5), stride=(1, 1), padding=(0, 2), bias=False),
-            nn.BatchNorm2d(200),
-            activation,
-            nn.MaxPool2d((1, 2)),
-            nn.Dropout(0.5)
-        )
-
+        
+        for idx in range(1, len(deepconv)):
+            setattr(self, 'conv'+str(idx), nn.Sequential(
+                nn.Conv2d(
+                    deepconv[idx-1], deepconv[idx], kernel_size=(1,5),
+                    stride=(1,1), padding=(0,0), bias=True
+                ),
+                nn.BatchNorm2d(deepconv[idx]),
+                activation(),
+                nn.MaxPool2d(kernel_size=(1, 2)),
+                nn.Dropout(p=dropout)
+            ))
+        
+        
+        flatten_size =  deepconv[-1] * reduce(
+            lambda x,_: round((x-4)/2), deepconv, 750)
         self.classify = nn.Sequential(
-            nn.Linear(9200, 2)
+            nn.Linear(flatten_size, 2, bias=True),
         )
-
-    def forward(self, X):
-        X = self.layer1(X)
-        X = self.layer2(X)
-        X = self.layer3(X)
-        X = self.layer4(X)
-        X = X.view(X.shape[0], -1)
-
-        y_pred = self.classify(X)
-        #  y_pred = torch.argmax(y_pred, dim=1)
+    
+    def forward(self, x):
+        for i in range(len(self.deepconv)):
+            x = getattr(self, 'conv'+str(i))(x)
+        # flatten
+        x = x.view(-1, self.classify[0].in_features)
+        y_pred = self.classify(x)
         return y_pred
