@@ -1,4 +1,4 @@
-import show
+import showstuff
 import os
 import pandas as pd
 
@@ -34,7 +34,7 @@ class AccuracyResult():
         #self.df.to_csv(self.filepath)
         
         if show:
-            fig = show.showAccuracy(
+            fig = showstuff.showAccuracy(
                 title=modelName,
                 **Accs
             )

@@ -1,5 +1,5 @@
 import dataloader
-import show
+import showstuff
 from torch.utils.data import TensorDataset, DataLoader
 import torch
 import torch.nn as nn
@@ -26,8 +26,8 @@ def runModels(
     show = True
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    train_loader = DataLoader(train_dataset, batch_size=batch_size)
-    test_loader = DataLoader(test_dataset, len(test_dataset))
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, len(test_dataset), shuffle=True)
     
     Accs = {
     **{key+"_train" : [] for key in models},
@@ -83,8 +83,8 @@ def runModels(
             Accs[key+"_test"] += [(value*100.0) / len(test_dataset)]
          
         if show:
-            clear_output(wait=True)
-            show.showAccuracy(
+            # clear_output(wait=True)
+            showstuff.showAccuracy(
                 title='Epoch [{:4d}]'.format(epoch + 1),
                 **Accs
             )

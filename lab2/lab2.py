@@ -1,5 +1,5 @@
 import dataloader
-import show
+import showstuff
 import run
 import AccuracyResult
 import EEGNet
@@ -19,18 +19,18 @@ if __name__ == "__main__":
         "relu" : EEGNet.Net(nn.ReLU).to(device),
         "leaky_relu" : EEGNet.Net(nn.LeakyReLU).to(device),
     }
-    Accs = run.runModels(models, epoch_size=300, batch_size=64, learning_rate=1e-2, show=False)
-    show.showAccuracy("EEGNet", **Accs)
-    AccRes.add("EEGNet", Accs, show=False)
-
+    Accs = run.runModels(models, epoch_size=300, batch_size=64, learning_rate=1e-2, show=True)
+    showstuff.showAccuracy("EEGNet", **Accs)
+    AccRes.add("EEGNet", Accs, show=True)
+    
     print('Training & Testing DeepConvNet')
     models = {
         "elu" : DeepConvNet.Net(nn.ELU).to(device),
         "relu" : DeepConvNet.Net(nn.ReLU).to(device),
         "leaky_relu" : DeepConvNet.Net(nn.LeakyReLU).to(device),
     }
-    Accs = run.runModels(models, epoch_size=300, batch_size=64, learning_rate=1e-3, show=False)
-    show.showAccuracy("DeepConvNet", **Accs)
-    AccRes.add("DeepConvNet", Accs, show=False)
+    Accs = run.runModels(models, epoch_size=300, batch_size=64, learning_rate=1e-3, show=True)
+    showstuff.showAccuracy("DeepConvNet", **Accs)
+    AccRes.add("DeepConvNet", Accs, show=True)
     
     AccRes.show()
