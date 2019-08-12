@@ -19,7 +19,7 @@ if __name__ == "__main__":
         "relu" : EEGNet.Net(nn.ReLU).to(device),
         "leaky_relu" : EEGNet.Net(nn.LeakyReLU).to(device),
     }
-    Accs = run.runModels(models, epoch_size=150, batch_size=64, learning_rate=1e-2, show=True)
+    Accs = run.runModels(models, epoch_size=150, batch_size=64, learning_rate=1e-2, show=False)
     showstuff.showAccuracy("EEGNet", **Accs)
     AccRes.add("EEGNet", Accs, show=True)
     torch.save(models, 'EEG.pkl');
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         "relu" : DeepConvNet.Net(nn.ReLU).to(device),
         "leaky_relu" : DeepConvNet.Net(nn.LeakyReLU).to(device),
     }
-    Accs = run.runModels(models, epoch_size=150, batch_size=64, learning_rate=1e-3, show=True)
+    Accs = run.runModels(models, epoch_size=150, batch_size=64, learning_rate=1e-2, show=False)
     showstuff.showAccuracy("DeepConvNet", **Accs)
     AccRes.add("DeepConvNet", Accs, show=True)
     torch.save(models, 'DeepConv.pkl');

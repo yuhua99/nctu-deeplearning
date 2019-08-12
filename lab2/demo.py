@@ -1,8 +1,11 @@
 import dataloader
 import showstuff
-from torch.utils.data import TensorDataset, DataLoader
+import AccuracyResult
+import EEGNet
+import DeepConvNet
 import torch
 import torch.nn as nn
+from torch.utils.data import TensorDataset, DataLoader
 import torch.optim as optim
 from IPython.display import clear_output
 
@@ -26,8 +29,6 @@ def runModels(
     optimizer = optim.Adam, criterion = nn.CrossEntropyLoss(),
     show = True
 ):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, len(test_dataset), shuffle=True)
     
     Accs = {
@@ -43,28 +44,7 @@ def runModels(
         if epoch % 50 == 0:
             print('now epoch', epoch)
 
-        train_correct = {key:0.0 for key in models}
         test_correct = {key:0.0 for key in models}
-        # training multiple model
-        for idx, data in enumerate(train_loader):
-            x, y = data
-            inputs = x.to(device)
-            labels = y.to(device).long().view(-1)
-        
-            for optimizer in optimizers.values():
-                optimizer.zero_grad()
-        
-            for key, model in models.items():
-                outputs = model.forward(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-            
-                train_correct[key] += (
-                    torch.max(outputs, 1)[1] == labels
-                ).sum().item()
-        
-            for optimizer in optimizers.values():
-                optimizer.step()
         
         # testing multiple model
         with torch.no_grad():
@@ -79,9 +59,6 @@ def runModels(
                     test_correct[key] += (
                         torch.max(outputs, 1)[1] == labels.long().view(-1)
                     ).sum().item()
-
-        for key, value in train_correct.items():
-            Accs[key+"_train"] += [(value*100.0) / len(train_dataset)]
     
         for key, value in test_correct.items():
             Accs[key+"_test"] += [(value*100.0) / len(test_dataset)]
@@ -96,3 +73,23 @@ def runModels(
     # epoch end
     torch.cuda.empty_cache()
     return Accs
+
+if __name__ == "__main__":
+    device = ("cuda" if torch.cuda.is_available() else "cpu")
+    print('pytorch device : ', device)
+
+    AccRes = AccuracyResult.AccuracyResult()
+
+    print('Testing EEGNet')
+    models = torch.load('EEG.pkl')
+    Accs = runModels(models, epoch_size=150, batch_size=64, learning_rate=1e-2, show=False)
+    showstuff.showAccuracy("EEGNet", **Accs)
+    AccRes.add("EEGNet", Accs, show=True)
+
+    print('Testing DeepConvNet')
+    models = torch.load('DeepConv.pkl')
+    Accs = runModels(models, epoch_size=150, batch_size=64, learning_rate=1e-2, show=False)
+    showstuff.showAccuracy("DeepConvNet", **Accs)
+    AccRes.add("DeepConvNet", Accs, show=True)
+    
+    AccRes.show()
