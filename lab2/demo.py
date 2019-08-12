@@ -84,12 +84,12 @@ if __name__ == "__main__":
     models = torch.load('EEG.pkl')
     Accs = runModels(models, epoch_size=150, batch_size=64, learning_rate=1e-2, show=False)
     showstuff.showAccuracy("EEGNet", **Accs)
-    AccRes.add("EEGNet", Accs, show=True)
+    AccRes.add("EEGNet", Accs, show=False)
 
     print('Testing DeepConvNet')
     models = torch.load('DeepConv.pkl')
     Accs = runModels(models, epoch_size=150, batch_size=64, learning_rate=1e-2, show=False)
     showstuff.showAccuracy("DeepConvNet", **Accs)
-    AccRes.add("DeepConvNet", Accs, show=True)
+    AccRes.add("DeepConvNet", Accs, show=False)
     
     AccRes.show()
