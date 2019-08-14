@@ -8,7 +8,7 @@ from tqdm import trange
 from utils import generate_one_hot_by_label, plot_generated_image, generate_random_one_hot
 from torchvision import datasets, transforms
 from torchvision.utils import save_image
-from model.mnist_network import _netg, _netd
+from mnist_network import _netg, _netd
 from tensorboardX import SummaryWriter
 
 def save_checkpoint(state, filename):
@@ -43,6 +43,8 @@ writer = SummaryWriter()
 # Cuda Settings
 cuda = True if torch.cuda.is_available() else False
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print('device = ', device)
+
 if cuda:
     torch.cuda.set_device(args.gpu)
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
@@ -191,4 +193,4 @@ with trange(args.start_epoch, args.epochs) as t:
                 'optimizerD': optimizerD.state_dict(),
                 'optimizerG': optimizerG.state_dict(),
                 'optimizerInfo': optimizerInfo.state_dict()
-            }, f"./checkpoint/{args.batch_size}_{args.lrg}_{args.lrd}.pth")
+            }, 'checkpoint.pth')

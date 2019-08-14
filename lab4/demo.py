@@ -6,7 +6,7 @@ import numpy as np
 
 from utils import generate_one_hot_by_label, plot_generated_image, generate_random_one_hot
 from torchvision.utils import save_image
-from model.mnist_network import _netg
+from mnist_network import _netg
 
 
 def generate_noise(num, _z):
@@ -21,11 +21,12 @@ args = parser.parse_args()
 
 cuda = True if torch.cuda.is_available() else False
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print('device = ', device)
 
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-checkpoint = torch.load("./checkpoint/16_0.0005_0.0005_2.pth")
+checkpoint = torch.load('checkpoint.pth')
 
 
 netg = _netg(nz=64, ngf=64, nc=1).to(device)
