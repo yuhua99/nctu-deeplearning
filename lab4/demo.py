@@ -10,7 +10,8 @@ from mnist_network import _netg
 
 
 def generate_noise(num, _z):
-    num2idx = {0:0, 1:3, 2:2, 3:1, 4:4, 5:5, 6:6, 7:7, 8:9, 9:8}
+    # num2idx = {0:0, 1:1, 2:2, 3:4, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9}
+    num2idx = {0:0, 1:3, 2:4, 3:4, 4:8, 5:7, 6:6, 7:9, 8:5, 9:2}
     c = FloatTensor(generate_one_hot_by_label([num2idx[num]], 10))
     z = torch.cat((_z, c), 1)
     return z 
@@ -21,12 +22,12 @@ args = parser.parse_args()
 
 cuda = True if torch.cuda.is_available() else False
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print('device = ', device)
+
 
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-checkpoint = torch.load('checkpoint.pth')
+checkpoint = torch.load('checkpoint.pth', map_location='cpu')
 
 
 netg = _netg(nz=64, ngf=64, nc=1).to(device)
